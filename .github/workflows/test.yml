@@ -1,6 +1,6 @@
 name: Autograding Tests
 
-'on':
+on:
   - push
   - repository_dispatch
 
@@ -15,22 +15,27 @@ jobs:
     if: github.actor != 'github-classroom[bot]'
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run Autograding Tests
-        id: tests
+      - name: Run pytest
+        id: run-tests
         uses: classroom-resources/autograding-python-grader@v1
         with:
-          # Runs pytest against your summarize_adoptions tests
           entryPoint: python
           args: -m pytest -q
-
-          # Install dependencies if needed (pytest already available)
           setup-command: ""
+          timeout: 20
 
-          # Max time before test timeout
-          timeout: 10
+      - name: Autograding Test Runner
+        id: tests
+        uses: classroom-resources/autograding-test-runner@v1
+        with:
+          test_suite: |
+            - name: summarize_adoptions tests
+              setup: ""
+              run: python -m pytest -q
+              points: 100
 
       - name: Autograding Reporter
         uses: classroom-resources/autograding-grading-reporter@v1
