@@ -1,0 +1,40 @@
+name: Autograding Tests
+
+'on':
+  - push
+  - repository_dispatch
+
+permissions:
+  checks: write
+  actions: read
+  contents: read
+
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Autograding Tests
+        id: tests
+        uses: classroom-resources/autograding-python-grader@v1
+        with:
+          # Runs pytest against your summarize_adoptions tests
+          entryPoint: python
+          args: -m pytest -q
+
+          # Install dependencies if needed (pytest already available)
+          setup-command: ""
+
+          # Max time before test timeout
+          timeout: 10
+
+      - name: Autograding Reporter
+        uses: classroom-resources/autograding-grading-reporter@v1
+        env:
+          TESTS_RESULTS: "${{ steps.tests.outputs.result }}"
+        with:
+          runners: tests
